@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+    gavilan:
+        container_name: gavilan
+        image: gavilan
+        build:
+            context: .
+            dockerfile: ./Dockerfile
+        command: npm run start:prod
+        ports:
+            - 3030:3030
+            - 3031:3031
+        networks:
+            - torogoz-network
+        volumes:
+            - .:/usr/src/app
+            - /usr/src/app/node_modules
+        environment:
+            POSTGRES_USER: ${POSTGRES_USER}
+            POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+            POSTGRES_HOST: ${POSTGRES_HOST}
+        restart: always
+        depends_on:
+            - postgres_torogoz
+
+    postgres_torogoz:
+        restart: always
+        image: postgres:15-alpine
+        container_name: postgres_torogoz
+        environment:
+            POSTGRES_DB: seguridad_torogoz
+            POSTGRES_USER: ${POSTGRES_USER}
+            POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+            POSTGRES_PGDATA: /var/lib/postgresql/data/pgdata
+            NODE_ENV: ${NODE_ENV}
+            AUDIENCE: ${AUDIENCE}
+        ports:
+            - '5432:5432'
+        volumes:
+            - postgres_volume_torogoz:/var/lib/postgresql/data
+        networks:
+            - torogoz-network
+
+volumes:
+    postgres_volume_torogoz:
+        driver: local
+        name: postgres_volume_torogoz
+
+networks:
+    torogoz-network:
